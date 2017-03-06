@@ -1,0 +1,5 @@
+beautifulsoup4
+broth
+requests
+openpyxl
+validators

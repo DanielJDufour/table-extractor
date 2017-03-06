@@ -31,6 +31,23 @@ class TestMethods(unittest.TestCase):
             except Exception as e:
                 print "CAUGHT ERROR on format:", _format, e
 
+    def testHTML(self):
+        try:
+            html = get("http://www.nuforc.org/webreports/ndxlAK.html").text
+            tables = extract_tables(html)
+            self.assertEqual(len(tables), 1)
+            self.assertTrue(len(tables[0]) > 50)
+        except Exception as e:
+            print "CAUGHT EXCEPTION in te4stHTML:", e
+
+    def testWebpage(self):
+        tables = extract_tables("http://www.nuforc.org/webreports/ndxlAK.html")
+        try:
+            self.assertEqual(len(tables), 1)
+            self.assertTrue(len(tables[0]) > 50)
+        except Exception as e:
+            print "CAUGHT ERROR testWebpage:", e
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,9 @@
+from broth import Broth
 from csv import reader as csv_reader
 from openpyxl import load_workbook
 from os.path import isfile
+from requests import get
+from validators import url
 
 def extract_tables(data):
 
@@ -22,6 +25,10 @@ def extract_tables(data):
         if isfile(data):
             with open(data) as f:
                 return extract_tables(f)
+        elif url(data):
+            return extract_tables_from_html(get(data).text)
+        elif data.count("<") > 5 and data.count(">") > 5:
+            return extract_tables_from_html(data)
 
 def extract_tables_from_excel_spreadsheet(excel_file):
     # can't do this all in one line with list comprehension because sometimes openpyxl and .xlsx adds a row at ends that's all Nones
@@ -40,6 +47,22 @@ def extract_tables_from_excel_spreadsheet(excel_file):
 def extract_tables_from_csv(csvfile):
     # assumes commas separated for now
     return [list(csv_reader(csvfile, delimiter=',', quotechar='"'))]
+
+def extract_tables_from_html(html):
+    tables = []
+    for table in Broth(html).tables:
+        rows = []
+        header = [th.text for th in table.select("thead tr th")]
+        if header:
+            rows.append(header)
+
+        for row in table.select("tbody tr"):
+            tds = [td.text for td in row.select("td")]
+            if tds:
+                rows.append(tds)
+        tables.append(rows)
+    return tables
+        
 
 def extract_tables_from_tsv(tsvfile):
     return [list(csv_reader(tsvfile, delimiter='\t', quotechar='"'))]
