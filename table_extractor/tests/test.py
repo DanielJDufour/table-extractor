@@ -22,6 +22,13 @@ class timeout:
 
 class TestMethods(unittest.TestCase):
 
+    def testDoc(self):
+        try:
+            tables = extract_tables(path_to_directory_of_this_file + "/test.docx")
+            self.assertEqual(len(tables), 1)
+        except Exception as e:
+            print "Caught EXCEPTION on docx:", e
+
     def testFormats(self):
         for _format in ("csv", "tsv", "xlsx"):
             try:

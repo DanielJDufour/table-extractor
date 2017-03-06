@@ -1,5 +1,6 @@
 beautifulsoup4
 broth
+python-docx
 requests
 openpyxl
 validators

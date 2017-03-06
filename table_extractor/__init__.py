@@ -1,5 +1,6 @@
 from broth import Broth
 from csv import reader as csv_reader
+from docx import Document
 from openpyxl import load_workbook
 from os.path import isfile
 from requests import get
@@ -47,6 +48,18 @@ def extract_tables_from_excel_spreadsheet(excel_file):
 def extract_tables_from_csv(csvfile):
     # assumes commas separated for now
     return [list(csv_reader(csvfile, delimiter=',', quotechar='"'))]
+
+def extract_tables_from_doc(doc_file):
+    tables = []
+    for table in Document(doc_file).tables:
+        rows = []
+        for row in rows:
+            values = [cell.text for cell in row.cells]
+            set_of_values = set(values)
+            if not(len(set_of_values) == 1 and set_of_values.pop() == None):
+                rows.append(values)
+        tables.append(rows)
+    return tables
 
 def extract_tables_from_html(html):
     tables = []
