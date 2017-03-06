@@ -1,14 +1,26 @@
 from broth import Broth
 from csv import reader as csv_reader
+from date_extractor import extract_date
 from docx import Document
 from openpyxl import load_workbook
 from os.path import isfile
 from requests import get
 from validators import url
 
-def extract_tables(data):
+def clean(value):
+    if isinstance(value,float) or isinstance(value,int):
+        return value
+    elif isinstance(value, str) or isinstance(value, unicode):
+        value = value.strip().strip('"').strip('"').strip()
+        date = extract_date(value)
+        if date:
+            return date
+        elif value.isdigit():
+            return float(value)
 
-    print "type of data:", type(data)
+def extract_tables(data, debug=False):
+
+    if debug: print "type of data:", type(data)
     if isinstance(data, file):
         filename = data.name
         if filename.endswith(".csv"):
@@ -37,7 +49,7 @@ def extract_tables_from_excel_spreadsheet(excel_file):
     for sheet in load_workbook(excel_file):
         rows = []
         for row in sheet:
-            values = [cell.value for cell in row] 
+            values = [clean(cell.value) for cell in row] 
             set_of_values = set(values)
             if not(len(set_of_values) == 1 and set_of_values.pop() == None):
                 rows.append(values)
@@ -45,16 +57,23 @@ def extract_tables_from_excel_spreadsheet(excel_file):
     return tables
      
 
-def extract_tables_from_csv(csvfile):
+def extract_tables_from_csv(csvfile, delimiter=",", quotechar='"'):
     # assumes commas separated for now
-    return [list(csv_reader(csvfile, delimiter=',', quotechar='"'))]
+    rows = []
+    for row in csv_reader(csvfile, delimiter=delimiter, quotechar=quotechar):
+        values = [clean(cell) for cell in row]
+        set_of_values = set(values)
+        if not(len(set_of_values) == 1 and set_of_values.pop() == None):
+            rows.append(values)
+    return [rows]
+        
 
 def extract_tables_from_doc(doc_file):
     tables = []
     for table in Document(doc_file).tables:
         rows = []
         for row in rows:
-            values = [cell.text for cell in row.cells]
+            values = [clean(cell.text) for cell in row.cells]
             set_of_values = set(values)
             if not(len(set_of_values) == 1 and set_of_values.pop() == None):
                 rows.append(values)
@@ -65,12 +84,12 @@ def extract_tables_from_html(html):
     tables = []
     for table in Broth(html).tables:
         rows = []
-        header = [th.text for th in table.select("thead tr th")]
+        header = [clean(th.text) for th in table.select("thead tr th")]
         if header:
             rows.append(header)
 
         for row in table.select("tbody tr"):
-            tds = [td.text for td in row.select("td")]
+            tds = [clean(td.text) for td in row.select("td")]
             if tds:
                 rows.append(tds)
         tables.append(rows)
@@ -78,7 +97,7 @@ def extract_tables_from_html(html):
         
 
 def extract_tables_from_tsv(tsvfile):
-    return [list(csv_reader(tsvfile, delimiter='\t', quotechar='"'))]
+    return extract_tables_from_csv(tsvfile, delimiter="\t")
 
 
 

@@ -1,5 +1,6 @@
 beautifulsoup4
 broth
+date-extractor
 python-docx
 requests
 openpyxl

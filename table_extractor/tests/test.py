@@ -34,7 +34,7 @@ class TestMethods(unittest.TestCase):
             try:
                 tables = extract_tables(path_to_directory_of_this_file + "/test." + _format)
                 self.assertEqual(len(tables), 1)
-                self.assertEqual(len(tables[0]), 11)
+                self.assertEqual(len(tables[0]), 10)
             except Exception as e:
                 print "CAUGHT ERROR on format:", _format, e
 
