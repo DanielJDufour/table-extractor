@@ -24,7 +24,7 @@ def clean(value):
         else:
             return value
 
-def extract_tables(data, debug=True):
+def extract_tables(data, debug=False):
 
     try:
 
@@ -98,7 +98,7 @@ def extract_tables_from_excel_spreadsheet(excel_file):
     return tables
      
 
-def extract_tables_from_csv(csvfile, delimiter=",", quotechar='"', debug=True):
+def extract_tables_from_csv(csvfile, delimiter=",", quotechar='"', debug=False):
     # assumes commas separated for now
     rows = []
     for row in csv_reader(csvfile, delimiter=delimiter, quotechar=quotechar):
