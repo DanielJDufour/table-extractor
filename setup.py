@@ -5,7 +5,7 @@ setup(
   packages = ['table_extractor'],
   package_dir = {'table_extractor': 'table_extractor'},
   package_data = {'table_extractor': ['__init__.py']},
-  version = '0.7',
+  version = '0.8',
   description = 'Extract normalized tables from CSVs, Excel Spreadsheets, PDFs, Word Docs, and Web Pages',
   author = 'Daniel J. Dufour',
   author_email = 'daniel.j.dufour@gmail.com',

@@ -12,7 +12,7 @@ from validators import url
 def clean(value):
     if isinstance(value,float) or isinstance(value,int):
         return value
-    elif isinstance(value, str) or isinstance(value, unicode):
+    elif isinstance(value, str) or isinstance(value, str):
         value = value.strip().strip('"').strip('"').strip()
         date = extract_date(value)
         if date:
@@ -28,16 +28,16 @@ def extract_tables(data, debug=False):
 
     try:
 
-        if debug: print "starting extract_tables"
-        if debug: print "type of data:", type(data)
+        if debug: print("starting extract_tables")
+        if debug: print("type of data:", type(data))
 
         data_type = str(type(data))
-
+        if debug: print("data_type:", data_type)
 
         unsupported_extensions = ("doc", "xls")
 
         # we are not using isinstance here because the user might not have Django installed
-        if data_type in ("<type 'file'>", "<class 'django.core.files.uploadedfile.InMemoryUploadedFile'>"):
+        if data_type in ("<type 'file'>", "<class 'django.core.files.uploadedfile.InMemoryUploadedFile'>", "<class '_io.TextIOWrapper'>", "<class '_io.BufferedReader'>"):
             filename = data.name
             extension = filename.split(".")[-1]
             if filename.endswith(".csv"):
@@ -53,12 +53,18 @@ def extract_tables(data, debug=False):
             elif extension in unsupported_extensions:
                 raise Exception("table-extractor does not the " + extension + " extension")
 
-        elif isinstance(data, str) or isinstance(data, unicode):
+        elif isinstance(data, str) or data_type in ["<class 'str'>"]:
+            if debug: print("data is text", data)
             if isfile(data):
-                with open(data) as f:
-                    return extract_tables(f)
+                mode = "r"
+                extension = data.split(".")[-1]
+                if extension in ("docx", "xlsx", "xlsm", "xltx", "xltm", "pdf"):
+                    mode = "rb"
+                with open(data, mode=mode) as f:
+                    return extract_tables(f, debug=debug)
             elif url(data):
                 extension = data.split(".")[-1]
+                if debug: print("extension:", extension)
                 #if extension in ("csv", "tsv", "xls", "xlsm", "xlsx"):
                 if extension == "csv":
                     return extract_tables_from_csv(get(data).iter_lines())
@@ -71,18 +77,20 @@ def extract_tables(data, debug=False):
                 elif extension in unsupported_extensions:
                     raise Exception("table-extractor does not the " + extension + " extension")
                 else:
-                    print "if not a known ending, assume it's html"
-                    print "should watch out for large files like videos"
+                    print("if not a known ending, assume it's html")
+                    print("should watch out for large files like videos")
                     return extract_tables_from_html(get(data).text)
 
             elif data.count("<") > 5 and data.count(">") > 5:
                 return extract_tables_from_html(data)
+            else:
+                print("[table-extractor] couldn't figure out type of text")
 
         else:
-            print "[table-extractor] unhandled file type"
+            print("[table-extractor] unhandled file type")
 
     except Exception as e:
-        print "[table-extractor] caught exception in extract_tables:", e
+        print("[table-extractor] caught exception in extract_tables:", e)
 
 def extract_tables_from_excel_spreadsheet(excel_file):
     # can't do this all in one line with list comprehension because sometimes openpyxl and .xlsx adds a row at ends that's all Nones
@@ -102,14 +110,14 @@ def extract_tables_from_csv(csvfile, delimiter=",", quotechar='"', debug=False):
     # assumes commas separated for now
     rows = []
     for row in csv_reader(csvfile, delimiter=delimiter, quotechar=quotechar):
-        if debug: print "row:", row
+        if debug: print("row:", row)
         values = [clean(cell) for cell in row]
-        if debug: print "values:", values
+        if debug: print("values:", values)
         set_of_values = set(values)
         if not(len(set_of_values) == 1 and set_of_values.pop() == None):
             rows.append(values)
     tables = [rows]
-    if debug: print "[table-extractor] finishing extract_tables_from_csv with", tables
+    if debug: print("[table-extractor] finishing extract_tables_from_csv with", tables)
     return tables
         
 

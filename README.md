@@ -20,5 +20,5 @@ tables = extract_tables("/tmp/top_5_movies.docx")
 # Testing
 To test the package run
 ```
-python -m unittest table_extractor.tests.test
+python3 -m unittest table_extractor.tests.test
 ```
